@@ -1,0 +1,122 @@
+.app-root {
+    width: 100vw;
+    height: 100vh;
+    background: #14210a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* The stage keeps the reference's 2:1 shape and the HUD pins to it, so the
+   bet panel can't drift away from the track on wide monitors. */
+.stage-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: calc(100vh * 2);
+    max-height: calc(100vw / 2);
+    aspect-ratio: 800 / 400;
+    overflow: hidden;
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stage-wrap * { animation-duration: 0.01ms !important; }
+}
+
+/* ─── Result modal ────────────────────────────────────────────────────────── */
+.rm-backdrop {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(12, 24, 6, 0.55);
+    /* Above every in-scene overlay. GameUI's countdown sits at 100. */
+    z-index: 500;
+    animation: rmFade 0.18s ease-out;
+}
+@keyframes rmFade { from { opacity: 0; } to { opacity: 1; } }
+
+.rm-card {
+    position: relative;
+    width: min(46vh, 92%);
+    background: #fdf6e4;
+    border-radius: 14px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+    padding: 14px;
+    animation: rmPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes rmPop {
+    from { transform: scale(0.82) translateY(14px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.rm-scene {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 3px solid #f6efdd;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18) inset;
+}
+
+.rm-close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid #6e1410;
+    background: radial-gradient(circle at 38% 32%, #f0564a, #b8231b);
+    color: #fff;
+    font-size: 19px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #6e1410, 0 6px 14px rgba(0, 0, 0, 0.4);
+    line-height: 1;
+    z-index: 2;
+}
+.rm-close:active { transform: translateY(3px); box-shadow: 0 0 0 #6e1410; }
+
+.rm-foot {
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rm-congrats { position: relative; padding: 0 46px; }
+.rm-congrats-text {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f28a1e;
+    letter-spacing: 0.4px;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
+    animation: rmCheer 0.45s 0.15s backwards cubic-bezier(0.175, 0.885, 0.32, 1.4);
+    display: inline-block;
+}
+@keyframes rmCheer { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.rm-quiet { font-size: 20px; font-weight: 700; opacity: 0.85; }
+
+/* Confetti — decorative, static like the reference, but popped in. */
+.rm-conf {
+    position: absolute;
+    animation: rmConf 0.5s backwards ease-out;
+}
+@keyframes rmConf { from { transform: scale(0) rotate(-40deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+.rm-conf.c1 { left: 4px;  top: 4px;  width: 16px; height: 8px;  border-radius: 2px; background: #3a86ff; transform: rotate(-18deg); animation-delay: 0.22s; }
+.rm-conf.c2 { left: 20px; top: 30px; width: 9px;  height: 9px;  background: #e63946; clip-path: polygon(50% 0, 100% 100%, 0 100%); animation-delay: 0.3s; }
+.rm-conf.c3 { left: 34px; top: 10px; width: 10px; height: 10px; border-radius: 2px; background: #9b5de5; transform: rotate(24deg); animation-delay: 0.26s; }
+.rm-conf.c4 { right: 8px; top: 2px;  width: 18px; height: 18px; border: 3px solid #6cb32e; border-radius: 50%; border-right-color: transparent; border-bottom-color: transparent; animation-delay: 0.24s; }
+.rm-conf.c5 { right: 30px; top: 32px; width: 10px; height: 10px; background: #ffbe0b; clip-path: polygon(50% 0, 100% 100%, 0 100%); animation-delay: 0.34s; }
+.rm-conf.c6 { right: 4px; top: 30px; width: 12px; height: 7px; border-radius: 2px; background: #e63946; transform: rotate(30deg); animation-delay: 0.38s; }
+
+/* The winner does a slow victory bob. Nobody else moves. */
+.podium-bird.cheer { animation: rmBob 1.1s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom center; }
+@keyframes rmBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .rm-card, .rm-backdrop, .rm-congrats-text, .rm-conf, .podium-bird.cheer { animation: none; }
+}
