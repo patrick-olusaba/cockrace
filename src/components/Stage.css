@@ -1,0 +1,10 @@
+/* Stage — the race canvas. Imported by Stage.tsx.
+
+   Sizing only. Everything inside the SVG is drawn by Backdrop / TrackLayer /
+   Bird and styled with presentation attributes, not CSS. */
+
+.race-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

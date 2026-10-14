@@ -1,0 +1,108 @@
+/* GameUI — the HUD bar and the countdown overlay. Imported by GameUI.tsx.
+
+   These were inline style objects in the component. Moved verbatim: same
+   values, no behaviour change. resultBounce came across as dead — it animated
+   the green result overlay that ResultModal replaced. */
+
+.hud-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hud-stack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hud-spacer { flex: 1; }
+
+.hud-countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 100;
+}
+
+.hud-countdown-n {
+  font-size: 120px;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 30px rgba(255, 200, 0, 0.9), 0 4px 10px rgba(0, 0, 0, 0.8), 4px 4px 0 #a06000;
+  animation: countdownPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes countdownPop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  40%  { transform: scale(1.3); opacity: 1; }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── HUD bar ─────────────────────────────────────────────────────────────
+   Overlays the top of the stage, so its height is track you can't see. The
+   logo used to sit on the left with a 62px spacer on the right to keep the
+   balance centred; both are gone and the balance just centres itself. */
+.hud-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #1a0a00 0%, #2d1200 100%);
+  border-bottom: 3px solid #6b3a10;
+  pointer-events: auto;
+}
+
+.hud-balance {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  background: linear-gradient(180deg, #c49a28 0%, #a07820 40%, #8B6914 100%);
+  border: 3px solid #6b4e10;
+  border-radius: 6px;
+  padding: 5px 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  max-width: 100%;
+}
+
+.hud-balance-label {
+  font-size: 13px; color: #4a2c00; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.hud-balance-value {
+  font-size: 17px; color: #fff8e0; font-weight: 900;
+  white-space: nowrap;
+}
+
+/* ── Phone ──────────────────────────────────────────────────────────────
+   Everything still fits because it wraps; these rules just stop it wrapping
+   into six sad rows. The picked-bird text goes because the chosen lane
+   button is already lit — it was never carrying its own weight. */
+@media (max-width: 620px) {
+  /* Roughly half the height and two-thirds the type — the bar is an overlay,
+     so 24px saved here is 24px of track handed back. */
+  .hud-bar { height: 34px; padding: 0 10px; border-bottom-width: 2px;}
+  .hud-balance { padding: 2px 10px; border-width: 2px; border-radius: 5px; gap: 5px;}
+  .hud-balance-label { font-size: 9px; letter-spacing: 0.3px;}
+  .hud-balance-value { font-size: 13px;}
+}
+
+/* ── Phone landscape ────────────────────────────────────────────────────
+   A bottom bar costs ~150px, which is 40% of a 390px-tall viewport — it drops
+   the bird to 30px, worse than before. Height is the scarce axis here and
+   width is abundant, so the panel moves to the side and the stage gets the
+   full height back. Same trade racing games make. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hud-bar { height: 30px;}
+  .hud-balance { padding: 1px 10px;}
+  .hud-balance-label { font-size: 9px;}
+  .hud-balance-value { font-size: 12px;}
+}
