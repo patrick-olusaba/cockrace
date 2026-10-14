@@ -1,22 +1,27 @@
 .app-root {
     width: 100vw;
-    height: 100vh;
+    /* dvh, not vh: on a phone, 100vh is the height WITHOUT the browser chrome,
+       so the bottom of the page — the buttons — sits under the address bar. */
+    height: 100dvh;
     background: #14210a;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
+    position: relative;
     overflow: hidden;
 }
 
-/* The stage keeps the reference's 2:1 shape and the HUD pins to it, so the
-   bet panel can't drift away from the track on wide monitors. */
+/* The stage takes what's left after the panel and never more. aspect-ratio is
+   VIEW_W_MIN / STAGE_H (420/400) — the narrowest viewBox the camera allows —
+   so on a portrait phone the box matches the viewBox exactly and nothing gets
+   letterboxed. On anything wider, max-height wins, the box gets wider than
+   1.05, and Stage.tsx widens the viewBox to match. */
 .stage-wrap {
     position: relative;
     width: 100%;
-    height: 100%;
-    max-width: calc(100vh * 2);
-    max-height: calc(100vw / 2);
-    aspect-ratio: 800 / 400;
+    aspect-ratio: 21 / 20;
+    max-height: 100%;
+    flex: 0 1 auto;
     overflow: hidden;
     font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
@@ -119,4 +124,195 @@
 
 @media (prefers-reduced-motion: reduce) {
     .rm-card, .rm-backdrop, .rm-congrats-text, .rm-conf, .podium-bird.cheer { animation: none; }
+}
+
+/* ─── HUD bar ─────────────────────────────────────────────────────────────
+   Overlays the top of the stage, so its height is track you can't see. The
+   logo used to sit on the left with a 62px spacer on the right to keep the
+   balance centred; both are gone and the balance just centres itself. */
+.hud-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 54px;
+    padding: 0 14px;
+    background: linear-gradient(180deg, #1a0a00 0%, #2d1200 100%);
+    border-bottom: 3px solid #6b3a10;
+    pointer-events: auto;
+}
+.hud-balance {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    background: linear-gradient(180deg, #c49a28 0%, #a07820 40%, #8B6914 100%);
+    border: 3px solid #6b4e10;
+    border-radius: 6px;
+    padding: 5px 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+    max-width: 100%;
+}
+.hud-balance-label {
+    font-size: 13px; color: #4a2c00; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.hud-balance-value {
+    font-size: 17px; color: #fff8e0; font-weight: 900;
+    white-space: nowrap;
+}
+
+/* ─── Bet panel ───────────────────────────────────────────────────────────
+   In normal flow, below the stage. Flow layout means it always reserves its
+   own height; wrapping means no control can ever be pushed out of reach.
+   The old version was one nowrap row needing 1325px inside an overflow:hidden
+   box — on a 390px phone, 71% of it was simply gone, START RACE first. */
+.bet-panel {
+    flex: 0 0 auto;
+    background: linear-gradient(180deg, #2d5a1b 0%, #1a3a0d 100%);
+    border-top: 3px solid #1a3a0d;
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    /* Keeps the buttons clear of the home indicator. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bp-strip {
+    height: 10px;
+    background: repeating-linear-gradient(90deg, #3a7a20 0 4px, #2d6618 4px 8px);
+    border-top: 2px solid #4a9428;
+}
+.bp-rows { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px 12px; }
+.bp-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.bp-label {
+    font-size: 12px; color: #a8d888; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.bp-lanes { display: flex; gap: 8px; }
+.bp-lane {
+    width: 44px; height: 44px; border-radius: 8px;
+    border: 2px solid rgba(0,0,0,0.35);
+    color: #fff; font-size: 18px; font-weight: 900;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+    cursor: pointer; opacity: 0.72;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
+    transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.bp-lane.is-on { opacity: 1; border-color: #fff; transform: translateY(-2px); }
+.bp-lane:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.bp-picked { margin-left: auto; text-align: right; min-width: 0; }
+.bp-picked-name { font-size: 14px; font-weight: 900; line-height: 1.2; }
+.bp-picked-tag { font-size: 11px; color: #a8d888; font-style: italic; }
+.bp-picked-none { font-size: 12px; color: rgba(168,216,136,0.5); }
+
+.bp-stepper { display: flex; align-items: center; gap: 6px; }
+.bp-mini {
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; cursor: pointer;
+    font-weight: 900; color: #fff; background: rgba(0,0,0,0.4);
+    font-size: 10px; padding: 0 10px; height: 36px; letter-spacing: 0.5px;
+}
+.bp-step {
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; cursor: pointer;
+    font-weight: 900; color: #fff; background: rgba(0,0,0,0.4);
+    font-size: 22px; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+}
+.bp-mini:disabled, .bp-step:disabled { opacity: 0.4; cursor: not-allowed; }
+.bp-amount {
+    background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 8px; padding: 0 14px; height: 40px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    min-width: 84px;
+}
+.bp-amount-n { font-size: 18px; font-weight: 900; color: #ffd700; }
+.bp-amount-c { font-size: 13px; color: #a8d888; font-weight: 700; }
+
+.bp-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.bp-preset {
+    background: rgba(60,130,40,0.7); border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 20px; color: #fff; font-size: 13px; font-weight: 700;
+    padding: 0 14px; height: 36px; cursor: pointer;
+}
+.bp-preset.is-on { background: #4a9e28; border-color: #a8d888; box-shadow: 0 0 10px rgba(100,200,60,0.5); }
+.bp-preset:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.bp-result {
+    font-size: 15px; font-weight: 900; padding: 8px 14px; border-radius: 8px;
+}
+.bp-result.is-win { color: #7fff50; background: rgba(0,80,0,0.4); border: 1px solid rgba(100,255,50,0.3); }
+.bp-result.is-loss { color: #ff6060; background: rgba(80,0,0,0.4); border: 1px solid rgba(255,80,80,0.3); }
+
+.bp-actions { display: flex; gap: 8px; margin-left: auto; }
+.bp-start, .bp-random {
+    border-radius: 10px; font-size: 14px; font-weight: 900;
+    padding: 0 20px; height: 46px; cursor: pointer; letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.bp-start { background: linear-gradient(135deg, #1a8c1a 0%, #0f6010 100%); border: 2px solid #4ac84a; color: #fff; }
+.bp-random { background: linear-gradient(135deg, #e8c000 0%, #b89000 100%); border: 2px solid #ffd700; color: #2a1a00; }
+.bp-start:disabled, .bp-random:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+/* ── Phone ──────────────────────────────────────────────────────────────
+   Everything still fits because it wraps; these rules just stop it wrapping
+   into six sad rows. The picked-bird text goes because the chosen lane
+   button is already lit — it was never carrying its own weight. */
+@media (max-width: 620px) {
+    /* Roughly half the height and two-thirds the type — the bar is an overlay,
+       so 24px saved here is 24px of track handed back. */
+    .hud-bar { height: 34px; padding: 0 10px; border-bottom-width: 2px; }
+    .hud-balance { padding: 2px 10px; border-width: 2px; border-radius: 5px; gap: 5px; }
+    .hud-balance-label { font-size: 9px; letter-spacing: 0.3px; }
+    .hud-balance-value { font-size: 13px; }
+
+    .bp-rows { padding: 8px 10px 10px; gap: 6px; }
+    .bp-picked { display: none; }
+    .bp-lanes { flex: 1; }
+    .bp-lane { flex: 1; max-width: 68px; }
+    .bp-row-bet { justify-content: space-between; }
+    /* Presets get their own line under the stepper. They used to share the row
+       with flex:1, which left them ~90px next to a 268px stepper — so each pill
+       wrapped onto its own line and they stacked vertically down the side. */
+    .bp-presets { flex: 0 0 100%; gap: 8px; }
+    .bp-preset { flex: 1; padding: 0; min-width: 0; }
+    .bp-actions { width: 100%; margin-left: 0; }
+    .bp-start, .bp-random { flex: 1; padding: 0 8px; }
+    .bp-result { width: 100%; text-align: center; }
+}
+
+/* ── Phone landscape ────────────────────────────────────────────────────
+   A bottom bar costs ~150px, which is 40% of a 390px-tall viewport — it drops
+   the bird to 30px, worse than before. Height is the scarce axis here and
+   width is abundant, so the panel moves to the side and the stage gets the
+   full height back. Same trade racing games make. */
+@media (max-height: 520px) and (orientation: landscape) {
+    .hud-bar { height: 30px; }
+    .hud-balance { padding: 1px 10px; }
+    .hud-balance-label { font-size: 9px; }
+    .hud-balance-value { font-size: 12px; }
+
+    .app-root { flex-direction: row; }
+    .stage-wrap {
+        aspect-ratio: auto;
+        height: 100%;
+        max-height: none;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .bet-panel {
+        flex: 0 0 238px;
+        width: 238px;
+        border-top: none;
+        border-left: 3px solid #1a3a0d;
+        overflow-y: auto;
+        padding-bottom: 0;
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+    .bp-strip { display: none; }
+    .bp-rows { padding: 8px 10px; gap: 8px; }
+    .bp-row { justify-content: center; }
+    .bp-picked { display: none; }
+    .bp-label { width: 100%; text-align: center; }
+    .bp-lane { width: 44px; height: 40px; flex: 0 0 auto; }
+    .bp-presets { flex: 0 0 100%; gap: 6px; }
+    .bp-preset { flex: 1; padding: 0; min-width: 0; font-size: 12px; }
+    .bp-actions { width: 100%; margin-left: 0; }
+    .bp-start, .bp-random { flex: 1; padding: 0 6px; height: 42px; font-size: 13px; }
 }

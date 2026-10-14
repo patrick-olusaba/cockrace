@@ -2,9 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Stage from './components/Stage';
 import GameUI from './components/GameUI';
 import ResultModal from './components/ResultModal';
+import BetPanel from './components/BetPanel';
 import { RACERS } from './racers';
 import { GamePhase } from './types';
 import { PAYOUT_MULT } from './game/constants';
+import { moneySigned } from './game/money';
 import './App.css';
 
 const App: React.FC = () => {
@@ -73,9 +75,9 @@ const App: React.FC = () => {
       if (pickRef.current === winnerId) {
         // Stake was taken at start, so a 3.5x payout nets 2.5x profit.
         setBalance((b) => b + Math.floor(bet * PAYOUT_MULT));
-        setResultMsg(`You win! +${Math.floor(bet * (PAYOUT_MULT - 1)).toLocaleString()} $`);
+        setResultMsg(`You win! ${moneySigned(Math.floor(bet * (PAYOUT_MULT - 1)))}`);
       } else {
-        setResultMsg(`You lose. -${bet.toLocaleString()} $`);
+        setResultMsg(`You lose. ${moneySigned(-bet)}`);
       }
     }
     // No auto-dismiss any more: the modal owns the wait, the player closes it.
@@ -88,32 +90,42 @@ const App: React.FC = () => {
   }, []);
 
   return (
-      <div className="app-root">
-        <div className="stage-wrap">
-          <Stage phase={phase} onFinish={handleFinish} />
-          <GameUI
-              balance={balance}
-              betAmount={betAmount}
-              selectedChicken={selectedChicken}
-              phase={phase}
-              countdown={countdown}
-              chickens={RACERS}
-              resultMessage={resultMessage}
-              onBetChange={setBetAmount}
-              onSelectChicken={handleSelectChicken}
-              onRandomChoice={handleRandomChoice}
-              onStartRace={handleStartRace}
-          />
-          {order && (
-              <ResultModal
-                  order={order}
-                  picked={selectedChicken}
-                  betAmount={betAmount}
-                  onClose={handleCloseResult}
-              />
-          )}
-        </div>
+    <div className="app-root">
+      {/* The stage takes whatever height is left after the panel. It can never
+          squeeze the controls out, because the panel is in normal flow. */}
+      <div className="stage-wrap">
+        <Stage phase={phase} onFinish={handleFinish} />
+        <GameUI
+          balance={balance}
+          selectedChicken={selectedChicken}
+          phase={phase}
+          countdown={countdown}
+          chickens={RACERS}
+        />
       </div>
+
+      <BetPanel
+        betAmount={betAmount}
+        selectedChicken={selectedChicken}
+        phase={phase}
+        chickens={RACERS}
+        resultMessage={resultMessage}
+        onBetChange={setBetAmount}
+        onSelectChicken={handleSelectChicken}
+        onRandomChoice={handleRandomChoice}
+        onStartRace={handleStartRace}
+      />
+
+      {/* Sits over stage AND panel, so it must live at the root. */}
+      {order && (
+        <ResultModal
+          order={order}
+          picked={selectedChicken}
+          betAmount={betAmount}
+          onClose={handleCloseResult}
+        />
+      )}
+    </div>
   );
 };
 

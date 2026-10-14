@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { FINISH_X, LANE_Y, START_X, STAGE_W, TRACK_H, TRACK_TOP } from '../game/constants';
+import { FINISH_X, LANE_Y, START_X, TRACK_H, TRACK_TOP, VIEW_W_MAX } from '../game/constants';
 
 const CHECK = 24;
 const BAND = 48;
@@ -15,8 +15,8 @@ export const LaneLines: React.FC = () => {
         <g>
             {ys.map((y) => (
                 <g key={y}>
-                    <line x1="0" y1={y + 1} x2={STAGE_W} y2={y + 1} stroke="#9c5f28" strokeWidth="3" opacity="0.35" />
-                    <line x1="0" y1={y} x2={STAGE_W} y2={y} stroke="#d9a468" strokeWidth="3" opacity="0.8" />
+                    <line x1="0" y1={y + 1} x2={VIEW_W_MAX} y2={y + 1} stroke="#9c5f28" strokeWidth="3" opacity="0.35" />
+                    <line x1="0" y1={y} x2={VIEW_W_MAX} y2={y} stroke="#d9a468" strokeWidth="3" opacity="0.8" />
                 </g>
             ))}
         </g>

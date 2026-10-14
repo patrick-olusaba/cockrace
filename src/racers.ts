@@ -73,6 +73,15 @@ export interface RacerIdentity {
     /** One-line character read, shown in the HUD. */
     tagline: string;
     bodyColor: string;
+    /**
+     * Tail and wing feathers. A real cockerel's sickles are a DIFFERENT colour
+     * from its body — usually a dark iridescent green-black against a lighter
+     * body. Deriving this from bodyColor (which is what it used to do) is what
+     * made the birds read as moulded plastic: one hue, three lightnesses.
+     */
+    tailColor: string;
+    /** Breast, throat and hackles. Pale — this is the part facing the light. */
+    breastColor: string;
     combColor: string;
     legColor: string;
     combStyle: CombStyle;
@@ -90,22 +99,26 @@ export interface RacerIdentity {
 export const RACERS: RacerIdentity[] = [
     {
         id: 1, name: 'Turbo', tagline: 'All gas, no brakes',
-        bodyColor: '#e63946', combColor: '#ffd23f', legColor: '#ffb703',
+        bodyColor: '#e63946', tailColor: '#22243c', breastColor: '#ffc9a8',
+        combColor: '#ffd23f', legColor: '#ffb703',
         combStyle: 'crown', tailStyle: 'sickle', build: 'lean', browAngle: -14,
     },
     {
         id: 2, name: 'Sir Pecks', tagline: 'Politely quick',
-        bodyColor: '#3a86ff', combColor: '#ff4d6d', legColor: '#ffd166',
+        bodyColor: '#3a86ff', tailColor: '#ffb703', breastColor: '#bcd8ff',
+        combColor: '#ff4d6d', legColor: '#ffd166',
         combStyle: 'pea', tailStyle: 'fan', build: 'standard', browAngle: 10,
     },
     {
         id: 3, name: 'Nugget', tagline: 'Built like a loaf',
-        bodyColor: '#ffbe0b', combColor: '#e63946', legColor: '#f77f00',
+        bodyColor: '#ffbe0b', tailColor: '#12715a', breastColor: '#ffe08a',
+        combColor: '#e63946', legColor: '#f77f00',
         combStyle: 'rose', tailStyle: 'stub', build: 'chunky', browAngle: null,
     },
     {
         id: 4, name: 'Duchess', tagline: 'Runs on spite',
-        bodyColor: '#9b5de5', combColor: '#f15bb5', legColor: '#ffd166',
+        bodyColor: '#9b5de5', tailColor: '#2a2140', breastColor: '#d9c2f0',
+        combColor: '#f15bb5', legColor: '#ffd166',
         combStyle: 'single', tailStyle: 'plume', build: 'tall', browAngle: 5,
     },
 ];
@@ -123,11 +136,15 @@ export interface BuildSpec {
     head: number;
 }
 
+// Real cockerels are short-necked and barrel-bodied — the head sits on the
+// shoulders, not atop a swan neck. Necks are compressed well below 1 so even
+// the "tall" bird never reads as an ostrich, and heads are a touch larger so
+// they carry the big comb. Build variety now lives in girth, not neck length.
 export const BUILDS: Record<Build, BuildSpec> = {
-    lean:     { bx: 1.14, by: 0.86, legs: 1.18, neck: 1.18, head: 0.94 },
-    standard: { bx: 1.00, by: 1.00, legs: 1.00, neck: 1.00, head: 1.00 },
-    chunky:   { bx: 0.94, by: 1.20, legs: 0.76, neck: 0.66, head: 1.10 },
-    tall:     { bx: 0.98, by: 0.90, legs: 1.34, neck: 1.50, head: 0.95 },
+    lean:     { bx: 1.12, by: 0.98, legs: 1.18, neck: 0.80, head: 1.04 },
+    standard: { bx: 1.00, by: 1.08, legs: 1.00, neck: 0.72, head: 1.08 },
+    chunky:   { bx: 0.96, by: 1.26, legs: 0.76, neck: 0.58, head: 1.14 },
+    tall:     { bx: 0.98, by: 1.00, legs: 1.34, neck: 0.92, head: 1.04 },
 };
 
 /** Derived palette for a racer — everything flows from bodyColor. */
@@ -139,8 +156,8 @@ export interface Palette {
 export function paletteFor(r: RacerIdentity): Palette {
     return {
         body:    r.bodyColor,
-        accent:  shade(r.bodyColor, -0.16, 0.06),  // tail + wing
-        light:   shade(r.bodyColor, 0.12, -0.04),  // neck + chest catch the light
+        accent:  r.tailColor,    // tail + wing — its own hue, not a shade of the body
+        light:   r.breastColor,  // neck + chest catch the light
         // The outline lands sub-pixel (~0.7px) at race scale, so it can never sit on
         // a whole pixel — it smears across two, differently every frame. Kept low
         // contrast so that smear resolves as a soft edge instead of a shimmer.
